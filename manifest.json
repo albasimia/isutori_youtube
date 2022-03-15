@@ -1,0 +1,13 @@
+{
+  "name": "isutori_youtube",
+  "version": "0.1.0",
+  "manifest_version": 3,
+  "description": "Sample Chrome Extension",
+  "background": {
+    "service_worker": "src/backgrouond.js"
+  },
+  "action": {
+    "default_title": "イストリYoutube",
+    "default_popup": "src/option.html"
+  }
+}
