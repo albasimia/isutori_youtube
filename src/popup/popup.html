@@ -19,7 +19,7 @@
                 <input type="checkbox" name="isutori_on" id="isutori_on">
             </div>
         </div>
-        <div class="row align-items-center">
+        <div class="row align-items-center mb-3">
             <div class="col-auto">
                 <label for="min_seconds" class="col-form-label">最小秒数</label>
             </div>
@@ -27,7 +27,7 @@
                 <input type="number" name="min_seconds" id="min_seconds" class="form-control">
             </div>
         </div>
-        <div class="row align-items-center">
+        <div class="row align-items-center mb-3">
             <div class="col-auto">
                 <label for="max_seconds" class="col-form-label">最大秒数</label>
             </div>
@@ -35,8 +35,16 @@
                 <input type="number" name="max_seconds" id="max_seconds" class="form-control">
             </div>
         </div>
-        <button type="submit" class="btn btn-primary" id="save">SAVE</button>
-        <p id="status"></p>
+        <div class="row mb-3">
+            <div class="col-auto">
+                <button type="submit" class="btn btn-primary" id="save">SAVE</button>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-auto">
+                <p id="status"></p>
+            </div>
+        </div>
     </section>
     <script src="jquery-3.6.0.slim.min.js"></script>
     <script src="popup.js"></script>

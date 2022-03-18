@@ -1,3 +1,4 @@
+let timer = null;
 const defaults = {
     isIsutoriOn: false,
     minSec: 10,
@@ -8,17 +9,35 @@ function save_options() {
     const isIsutoriOn = document.getElementById('isutori_on').checked;
     const minSec = document.getElementById('min_seconds').value;
     const maxSec = document.getElementById('max_seconds').value;
-    chrome.storage.local.set({
+    if (Number(minSec) >= Number(maxSec)) {
+        console.log({minSec,maxSec})
+        var status = document.getElementById('status');
+        status.textContent = '最小秒数は最大秒数より小さくしてください。';
+        clearTimeout(timer);
+        timer = setTimeout(function () {
+            status.textContent = '';
+        }, 3000)
+        return false
+    }
+    const newOption = {
         isIsutoriOn: isIsutoriOn,
         minSec: minSec,
         maxSec: maxSec,
-    }, function () {
+    };
+    chrome.storage.local.set(newOption, function () {
         // Update status to let user know options were saved.
+        chrome.tabs.query({
+            active: true,
+            currentWindow: true
+        }, function (tabs) {
+            chrome.tabs.sendMessage(tabs[0].id, newOption);
+        });
         var status = document.getElementById('status');
         status.textContent = '保存されました';
-        setTimeout(function(){
+        clearTimeout(timer);
+        setTimeout(function () {
             status.textContent = '';
-        },3000)
+        }, 3000)
     });
 }
 
@@ -31,4 +50,4 @@ function restore_options() {
     });
 }
 document.addEventListener('DOMContentLoaded', restore_options);
-document.getElementById('save').addEventListener('click',save_options);
+document.getElementById('save').addEventListener('click', save_options);

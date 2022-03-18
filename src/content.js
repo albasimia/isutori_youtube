@@ -16,51 +16,24 @@ let ytdApp = document.querySelector('ytd-app')
 const adClass = 'ad-showing'
 let isStarted = false
 
-const startIsutori = () => {
-    isStarted = true
-    console.log('isutori start!!')
-    const videoDuration = videoDom.duration * 1000
-    console.log({
-        videoDuration
-    })
-    let computedMaxSec = maxSec
-    if (videoDuration < maxSec) {
-        computedMaxSec = videoDuration
-    }
-    console.log({
-        computedMaxSec
-    })
-
-    const stopSec = Math.floor(Math.random() * (computedMaxSec - minSec) + minSec)
-    console.log({
-        stopSec
-    })
-    timer = setTimeout(() => {
-        videoDom.pause()
-        timer = null
-        console.log('isutori stop!')
-    }, stopSec)
-}
+chrome.runtime.onMessage.addListener((request, sender) => {
+    // 設定更新
+    clearIsutori()
+    loadSetting()
+});
 
 // ページ遷移の監視
 let href = location.href
 if (location.href.indexOf('watch?') > -1) {
-    init()
+    loadSetting()
 }
 docObserver = new MutationObserver(function (mutations) {
 
     if (href !== location.href) {
-        if (videoDom) {
-            videoDom.removeEventListener('loadedmetadata', startIsutori)
-        }
-        clearTimeout(timer)
-        timer = null
-        isStarted = false
-        videoObserver.disconnect()
-        console.log('isutori clear!!')
+        clearIsutori()
         if (location.href.indexOf('watch?') > -1) {
             ytdApp.addEventListener('yt-page-data-updated',
-                init, {
+                loadSetting, {
                     once: true
                 })
         }
@@ -73,6 +46,38 @@ docObserver.observe(document, {
     subtree: true
 });
 
+function startIsutori() {
+    isStarted = true
+    console.log('isutori start!!')
+    const videoDuration = videoDom.duration * 1000
+    let computedMaxSec = maxSec
+    if (videoDuration < maxSec) {
+        computedMaxSec = videoDuration
+    }
+
+    const stopSec = Math.floor(Math.random() * (computedMaxSec - minSec) + minSec)
+    timer = setTimeout(() => {
+        videoDom.pause()
+        timer = null
+        console.log('isutori stop!')
+    }, stopSec)
+}
+
+function clearIsutori() {
+    if (videoDom) {
+        videoDom.removeEventListener('loadedmetadata', startIsutori)
+    }
+    clearTimeout(timer)
+    timer = null
+    isStarted = false
+    if (videoObserver) {
+        videoObserver.disconnect()
+    }
+    console.log('isutori clear!!')
+}
+
+
+
 function init() {
     if (isIsutoriOn) {
         target = document.querySelector('#movie_player')
@@ -80,13 +85,11 @@ function init() {
 
         if (target.classList.contains(adClass)) {
             // 広告があるとき
-            // console.log('広告あり')
             // オブザーバーの作成
             videoObserver = new MutationObserver(records => {
                 // 変化が発生したときの処理を記述
                 records.forEach((record) => {
                     if (!record.target.classList.contains(adClass) && !isStarted) {
-                        // console.log('広告終わり')
                         videoDom.addEventListener('loadedmetadata', startIsutori)
                     }
                 })
@@ -98,7 +101,6 @@ function init() {
             })
         } else {
             // 広告がなかったとき
-            // console.log('広告なし')
             startIsutori()
         }
     }
@@ -121,4 +123,12 @@ function waitFor(selector, callback, timeout) {
         });
     }
 }
-// })
+
+function loadSetting() {
+    chrome.storage.local.get(null, function (items) {
+        isIsutoriOn = items.isIsutoriOn
+        maxSec = items.maxSec * 1000
+        minSec = items.minSec * 1000
+        init();
+    });
+}
