@@ -2,8 +2,9 @@
 console.log('イストリ！')
 
 // 設定読み込み
-const minSec = 10000
-const maxSec = 50000
+let isIsutoriOn = false
+let minSec = 10000
+let maxSec = 50000
 
 let timer = null;
 let videoObserver;
@@ -43,7 +44,7 @@ const startIsutori = () => {
 
 // ページ遷移の監視
 let href = location.href
-if (location.href.indexOf('watch?') > 0) {
+if (location.href.indexOf('watch?') > -1) {
     init()
 }
 docObserver = new MutationObserver(function (mutations) {
@@ -57,7 +58,7 @@ docObserver = new MutationObserver(function (mutations) {
         isStarted = false
         videoObserver.disconnect()
         console.log('isutori clear!!')
-        if (location.href.indexOf('watch?') > 0) {
+        if (location.href.indexOf('watch?') > -1) {
             ytdApp.addEventListener('yt-page-data-updated',
                 init, {
                     once: true
@@ -73,31 +74,33 @@ docObserver.observe(document, {
 });
 
 function init() {
-    target = document.querySelector('#movie_player')
-    videoDom = document.querySelector('.html5-main-video')
+    if (isIsutoriOn) {
+        target = document.querySelector('#movie_player')
+        videoDom = document.querySelector('.html5-main-video')
 
-    if (target.classList.contains(adClass)) {
-        // 広告があるとき
-        // console.log('広告あり')
-        // オブザーバーの作成
-        videoObserver = new MutationObserver(records => {
-            // 変化が発生したときの処理を記述
-            records.forEach((record) => {
-                if (!record.target.classList.contains(adClass) && !isStarted) {
-                    // console.log('広告終わり')
-                    videoDom.addEventListener('loadedmetadata', startIsutori)
-                }
+        if (target.classList.contains(adClass)) {
+            // 広告があるとき
+            // console.log('広告あり')
+            // オブザーバーの作成
+            videoObserver = new MutationObserver(records => {
+                // 変化が発生したときの処理を記述
+                records.forEach((record) => {
+                    if (!record.target.classList.contains(adClass) && !isStarted) {
+                        // console.log('広告終わり')
+                        videoDom.addEventListener('loadedmetadata', startIsutori)
+                    }
+                })
             })
-        })
-        // 監視の開始
-        videoObserver.observe(target, {
-            attributes: true,
-            attributeFilter: ['class']
-        })
-    } else {
-        // 広告がなかったとき
-        // console.log('広告なし')
-        startIsutori()
+            // 監視の開始
+            videoObserver.observe(target, {
+                attributes: true,
+                attributeFilter: ['class']
+            })
+        } else {
+            // 広告がなかったとき
+            // console.log('広告なし')
+            startIsutori()
+        }
     }
 }
 

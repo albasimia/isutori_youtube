@@ -11,29 +11,32 @@
 <body>
     <section class="option">
         <h1>イストリYoutube</h1>
-        <form id="optionForm">
-            <div class="form-check form-switch">
-                <input type="checkbox" name="isutori_on" id="isutori_on">
+        <div class="row align-items-center">
+            <div class="col-auto">
                 <label class="form-check-label" for="isutori_on">ON</label>
             </div>
-            <div class="row align-items-center">
-                <div class="col-auto">
-                    <label for="min_seconds" class="col-form-label">最小秒数</label>
-                </div>
-                <div class="col-auto">
-                    <input type="number" name="min_seconds" id="min_seconds" class="form-control">
-                </div>
+            <div class="col-auto">
+                <input type="checkbox" name="isutori_on" id="isutori_on">
             </div>
-            <div class="row align-items-center">
-                <div class="col-auto">
-                    <label for="max_seconds" class="col-form-label">最大秒数</label>
-                </div>
-                <div class="col-auto">
-                    <input type="number" name="max_seconds" id="max_seconds" class="form-control">
-                </div>
+        </div>
+        <div class="row align-items-center">
+            <div class="col-auto">
+                <label for="min_seconds" class="col-form-label">最小秒数</label>
             </div>
-            <button type="submit" class="btn btn-primary">SAVE</button>
-        </form>
+            <div class="col-auto">
+                <input type="number" name="min_seconds" id="min_seconds" class="form-control">
+            </div>
+        </div>
+        <div class="row align-items-center">
+            <div class="col-auto">
+                <label for="max_seconds" class="col-form-label">最大秒数</label>
+            </div>
+            <div class="col-auto">
+                <input type="number" name="max_seconds" id="max_seconds" class="form-control">
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary" id="save">SAVE</button>
+        <p id="status"></p>
     </section>
     <script src="jquery-3.6.0.slim.min.js"></script>
     <script src="popup.js"></script>
