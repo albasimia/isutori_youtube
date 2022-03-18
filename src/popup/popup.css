@@ -5,3 +5,7 @@
     width: 500px;
     padding: 20px;
 }
+
+h1 img {
+    height: 1em;
+}

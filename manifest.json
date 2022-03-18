@@ -3,21 +3,25 @@
   "version": "0.1.0",
   "manifest_version": 3,
   "description": "Youtubeでイストリゲームをしよう！！！",
-  "permissions":[
+  "permissions": [
+    "tabs",
     "storage"
   ],
+  "icons": {
+    "16": "src/icons/icon_16.png",
+    "48": "src/icons/icon_48.png",
+    "128": "src/icons/icon_128.png"
+  },
   "action": {
     "default_title": "イストリYoutube",
     "default_popup": "src/popup/popup.html"
   },
-  "content_scripts":[
-    {
-      "matches":[
-        "*://*.youtube.com/*"
-      ],
-      "js":[
-        "src/content.js"
-      ]
-    }
-  ]
+  "content_scripts": [{
+    "matches": [
+      "*://*.youtube.com/*"
+    ],
+    "js": [
+      "src/content.js"
+    ]
+  }]
 }
