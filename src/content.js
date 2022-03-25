@@ -4,14 +4,17 @@ console.log('イストリ！')
 // 設定読み込み
 let isIsutoriOn = false
 let minSec = 10000
-let maxSec = 50000
+let maxSec = 60000
+let isAutoRestart = false
+let restertInterval = 30000
 
-let timer = null;
-let videoObserver;
-let docObserver;
+let timer = null
+let restertTimer = null
+let videoObserver
+let docObserver
 
-let target;
-let videoDom;
+let target
+let videoDom
 let ytdApp = document.querySelector('ytd-app')
 const adClass = 'ad-showing'
 
@@ -21,8 +24,11 @@ let isStarted = false
 chrome.runtime.onMessage.addListener((request, sender) => {
     // 設定更新
     removeListeners()
-    if(request.isIsutoriOn){
+    if (request.isIsutoriOn) {
         addListeners()
+    }
+    if (request.isAutoRestart) {
+        clearRestert()
     }
     loadSetting()
     clearIsutori()
@@ -36,6 +42,7 @@ if (location.href.indexOf('watch?') > -1) {
 docObserver = new MutationObserver(function (mutations) {
 
     if (href !== location.href) {
+        clearRestert()
         clearIsutori()
         removeListeners()
         if (location.href.indexOf('watch?') > -1) {
@@ -55,7 +62,7 @@ docObserver.observe(document, {
 
 function startIsutori() {
     console.log('isutori start!!')
-    if(!isSetListner){
+    if (!isSetListner) {
         addListeners()
     }
     isStarted = true
@@ -70,6 +77,7 @@ function startIsutori() {
         videoDom.pause()
         timer = null
         console.log('isutori stop!')
+        setRestert()
     }, stopSec)
 }
 
@@ -105,6 +113,10 @@ function init() {
                     if (!record.target.classList.contains(adClass) && !isStarted) {
                         videoDom.addEventListener('loadedmetadata', startIsutori)
                     }
+                    if (record.target.classList.contains(adClass) && isStarted) {
+                        clearRestert()
+                        clearIsutori()
+                    }
                 })
             })
             // 監視の開始
@@ -117,7 +129,7 @@ function init() {
             console.log('広告なし')
             if (!videoDom.paused) {
                 startIsutori()
-            }else if(!isSetListner) {
+            } else if (!isSetListner) {
                 addListeners()
             }
         }
@@ -147,6 +159,8 @@ function loadSetting() {
         isIsutoriOn = items.isIsutoriOn
         maxSec = items.maxSec * 1000
         minSec = items.minSec * 1000
+        isAutoRestart = items.isAutoRestart
+        restertInterval = items.restertInterval * 1000
         init();
     });
 }
@@ -154,6 +168,7 @@ function loadSetting() {
 function addListeners() {
     videoDom.addEventListener('play', startIsutori)
     videoDom.addEventListener('pause', clearIsutori)
+    videoDom.addEventListener('ended', clearRestert)
     isSetListner = true
     console.log('add listeners')
 }
@@ -161,6 +176,31 @@ function addListeners() {
 function removeListeners() {
     videoDom.removeEventListener('play', startIsutori)
     videoDom.removeEventListener('pause', clearIsutori)
+    videoDom.removeEventListener('ended', clearIsutori)
     isSetListner = false
     console.log('remove listeners')
+}
+
+// TODO: 動画終了時の処理
+function setRestert() {
+    if (isAutoRestart) {
+        console.log('set restert')
+        try {
+            restertTimer = setTimeout(() => {
+                if (videoDom.paused) {
+                    videoDom.play()
+                }
+            }, restertInterval)
+        } catch (error) {
+            clearRestert()
+        }
+    }
+}
+
+function clearRestert() {
+    if (restertTimer) {
+        console.log('clear restert')
+        clearTimeout(restertTimer)
+        restertTimer = null
+    }
 }
