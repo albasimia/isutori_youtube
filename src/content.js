@@ -14,12 +14,18 @@ let target;
 let videoDom;
 let ytdApp = document.querySelector('ytd-app')
 const adClass = 'ad-showing'
+
+let isSetListner = false
 let isStarted = false
 
 chrome.runtime.onMessage.addListener((request, sender) => {
     // 設定更新
-    clearIsutori()
+    removeListeners()
+    if(request.isIsutoriOn){
+        addListeners()
+    }
     loadSetting()
+    clearIsutori()
 });
 
 // ページ遷移の監視
@@ -31,6 +37,7 @@ docObserver = new MutationObserver(function (mutations) {
 
     if (href !== location.href) {
         clearIsutori()
+        removeListeners()
         if (location.href.indexOf('watch?') > -1) {
             ytdApp.addEventListener('yt-page-data-updated',
                 loadSetting, {
@@ -47,8 +54,11 @@ docObserver.observe(document, {
 });
 
 function startIsutori() {
-    isStarted = true
     console.log('isutori start!!')
+    if(!isSetListner){
+        addListeners()
+    }
+    isStarted = true
     const videoDuration = videoDom.duration * 1000
     let computedMaxSec = maxSec
     if (videoDuration < maxSec) {
@@ -64,16 +74,18 @@ function startIsutori() {
 }
 
 function clearIsutori() {
-    if (videoDom) {
-        videoDom.removeEventListener('loadedmetadata', startIsutori)
+    if (isStarted) {
+        if (videoDom) {
+            videoDom.removeEventListener('loadedmetadata', startIsutori)
+        }
+        clearTimeout(timer)
+        timer = null
+        isStarted = false
+        if (videoObserver) {
+            videoObserver.disconnect()
+        }
+        console.log('isutori clear!!')
     }
-    clearTimeout(timer)
-    timer = null
-    isStarted = false
-    if (videoObserver) {
-        videoObserver.disconnect()
-    }
-    console.log('isutori clear!!')
 }
 
 
@@ -85,6 +97,7 @@ function init() {
 
         if (target.classList.contains(adClass)) {
             // 広告があるとき
+            console.log('広告あり')
             // オブザーバーの作成
             videoObserver = new MutationObserver(records => {
                 // 変化が発生したときの処理を記述
@@ -101,7 +114,12 @@ function init() {
             })
         } else {
             // 広告がなかったとき
-            startIsutori()
+            console.log('広告なし')
+            if (!videoDom.paused) {
+                startIsutori()
+            }else if(!isSetListner) {
+                addListeners()
+            }
         }
     }
 }
@@ -131,4 +149,18 @@ function loadSetting() {
         minSec = items.minSec * 1000
         init();
     });
+}
+
+function addListeners() {
+    videoDom.addEventListener('play', startIsutori)
+    videoDom.addEventListener('pause', clearIsutori)
+    isSetListner = true
+    console.log('add listeners')
+}
+
+function removeListeners() {
+    videoDom.removeEventListener('play', startIsutori)
+    videoDom.removeEventListener('pause', clearIsutori)
+    isSetListner = false
+    console.log('remove listeners')
 }
